@@ -1,0 +1,82 @@
+﻿services:
+  - type: web
+    name: fastreply-web
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run vercel-build
+    startCommand: npm start
+    autoDeploy: false
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fastreply-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: fastreply-redis
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: FastReply <onboarding@resend.dev>
+      - key: META_GRAPH_API_VERSION
+        value: v25.0
+      - key: INSTAGRAM_APP_ID
+        sync: false
+      - key: INSTAGRAM_APP_SECRET
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
+      - key: WEBHOOK_VERIFY_TOKEN
+        sync: false
+
+  - type: worker
+    name: fastreply-worker
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run db:generate
+    startCommand: npm run worker
+    autoDeploy: false
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fastreply-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: fastreply-redis
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: META_GRAPH_API_VERSION
+        value: v25.0
+      - key: INSTAGRAM_APP_ID
+        sync: false
+      - key: INSTAGRAM_APP_SECRET
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
+
+  - type: redis
+    name: fastreply-redis
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: fastreply-db
+    plan: starter
+    databaseName: fastreply
+    user: fastreply
